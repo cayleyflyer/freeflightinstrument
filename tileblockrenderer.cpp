@@ -230,9 +230,6 @@ void TileBlockRenderer::renderGPX(LocalGeoPosition& center) {
   long t_start = millis();
 
   int x0, y0, x1, y1;
-//  char wp;   // added for wp name
-//  char wp1;  // added for wp name
-//  char wp2;  // added for wp name
 
   int curr_tile_offset_x, curr_tile_offset_y, next_tile_offset_x, next_tile_offset_y;
   int64_t curr_tile_LL_x, curr_tile_LL_y, next_tile_LL_x, next_tile_LL_y;
@@ -256,21 +253,7 @@ void TileBlockRenderer::renderGPX(LocalGeoPosition& center) {
         y0 = DISPLAY_WIDTH_HALF - (_track->yList[nidx] - curr_tile_offset_y) * _zoomScale;
         x1 = DISPLAY_WIDTH_HALF + (_track->xList[nidx + 1] - next_tile_offset_x) * _zoomScale;
         y1 = DISPLAY_WIDTH_HALF - (_track->yList[nidx + 1] - next_tile_offset_y) * _zoomScale;
-         char wp = _track->wplist[nidx];
-         char wp1 = _track->wplist1[nidx];
-         char wp2 = _track->wplist2[nidx];
-         char wp3 = _track->wplist3[nidx];
-         char wp4 = _track->wplist4[nidx];
-         char wp5 = _track->wplist5[nidx];
-         char wp6 = _track->wplist6[nidx];
-         char wp7 = _track->wplist7[nidx];
-         char wp8 = _track->wplist8[nidx];
-    //    const char* wp = "ok";
-    //    char waypoint[9]; 
-    //    strcpy (waypoint,wp);
-   //     strcat(waypoint,wp1);
-   //     strcat(waypoint,wp2);
-         
+        char* wp = _track->nameList[nidx];  // added to print waypoint name onto screen
 
         // Calculate rotated position on screen.
         if (_heading != 0) {
@@ -279,18 +262,10 @@ void TileBlockRenderer::renderGPX(LocalGeoPosition& center) {
         }
 
         _display->fillCircle(x0, y0, 5, BLACK);  // added these lines to draw circle waypoints on 5/9/24
-        _display->setCursor(x0 + 6, y0);
+        _display->setCursor(x0 + 6, y0);         // set cursor next to waypoint
         _display->setTextSize(2);
         _display->setTextColor(BLACK);
         _display->write1(wp);                    // created a copy of this in sharedspidisplay and removed the refreash after each call to stop screen flicker, it Worked!
-        _display->write1(wp1);
-        _display->write1(wp2);
-        _display->write1(wp3);                    // created a copy of this in sharedspidisplay and removed the refreash after each call to stop screen flicker, it Worked!
-        _display->write1(wp4);
-        _display->write1(wp5);
-        _display->write1(wp6);                    // created a copy of this in sharedspidisplay and removed the refreash after each call to stop screen flicker, it Worked!
-        _display->write1(wp7);
-        _display->write1(wp8);
         _display->fillCircle(x1, y1, 5, BLACK);  // i guess a line is drawn between x0,y0,x1,y1.The last trackpoint does not have "WP"next to it
         _display->setCursor(x1 + 6, y0);
 
