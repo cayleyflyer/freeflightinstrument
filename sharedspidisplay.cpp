@@ -145,7 +145,7 @@ void SharedSPIDisplay::write(const char* str, bool hold) {
          disp.refresh();
     }
 }
-void SharedSPIDisplay::write1(char str) {
+void SharedSPIDisplay::write1(const char* str) {
     disp.setTextColor(BLACK);
     disp.write(str);
   }
