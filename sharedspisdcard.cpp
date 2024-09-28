@@ -271,25 +271,12 @@ wpname.toCharArray(wpo, wpname_len);
             track.xList[i] = locPos.xLocal();
             track.yList[i] = locPos.yLocal();
 
-        //    for (int i=0; i<sizeof wpo/sizeof wpo[0]; i++) {
-          //  char wpo = wpo[i];
-          //         }
-
-            track.wplist[i] = wpo[0] ;  // wpo[2]  works on individual char in string,  *wpo does load first letter of wpo name
-            track.wplist1[i] = wpo[1] ;  // wpo[2]  works on individual char in string,  *wpo does load first letter of wpo name
-            track.wplist2[i] = wpo[2] ;  // wpo[2]  works on individual char in string,  *wpo does load first letter of wpo name
-            track.wplist3[i] = wpo[3] ;  // wpo[2]  works on individual char in string,  *wpo does load first letter of wpo name
-            track.wplist4[i] = wpo[4] ;  // wpo[2]  works on individual char in string,  *wpo does load first letter of wpo name
-            track.wplist5[i] = wpo[5] ;  // wpo[2]  works on individual char in string,  *wpo does load first letter of wpo name
-            track.wplist6[i] = wpo[6] ;  // wpo[2]  works on individual char in string,  *wpo does load first letter of wpo name
-            track.wplist7[i] = wpo[7] ;  // wpo[2]  works on individual char in string,  *wpo does load first letter of wpo name
-            track.wplist8[i] = wpo[8] ;  // wpo[2]  works on individual char in string,  *wpo does load first letter of wpo name
-      // <trkpt lat="53.905687" lon="-0.197117" name="h18">
-     //  sout << "wp " << wpo <= " ";  
-
-      sout << "wplist" << wpo <="  ";                           // track.wplist is in the gpxtrack.h struct
-      sout << " lat " << lat <= "  ";
-      sout << " lon " << lon <= "  ";
+uint16_t nameLength = ptr_wp_end - ptr_wp_start;
+// Allocate space for the i-th waypoint name. We need one additional character for null-termination
+track.nameList[i] = new char[nameLength + 1];
+memcpy(track.nameList[i], &(line.c_str()[ptr_wp_start]), nameLength * sizeof(char));
+// Add null termination at end of waypoint name
+track.nameList[i][nameLength + 1] = '\0';
             i++;   
         }
     };
