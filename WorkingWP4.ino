@@ -25,10 +25,6 @@ SimpleTile::Header header;
 
 uint16_t currHeading = 0;
 
-// Fixed position provider for debugging
-GeoPosition currPos(53.897078, -0.166197);
-ConstGeoPosition mockPosProvider(currPos, currHeading);
-
 SharedSPIDisplay display(DISPLAY_CS);
 SharedSPISDCard sdcard(SDCARD_CS);
 GNSSModule gnss(0);
@@ -116,13 +112,6 @@ else{
 }
 
 }
-  double offset1 = 1e-5;
-   double offset2 = 0;
-   currPos.updatePosition(currPos.lat() + offset1, currPos.lon() + offset2);
-   currHeading += 1;
-   currHeading %= 360;
-   mockPosProvider.changePosition(currPos);
-   mockPosProvider.changeHeading(currHeading);
     
 UIRENDERER.step();
 
