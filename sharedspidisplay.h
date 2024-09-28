@@ -38,7 +38,7 @@ public:
     void newPage();
 
     void write(const char* str, bool hold=0);
-    void write1(char str);
+    void write1(const char* str);
     void clearDisplay();
     void setRotation(int8_t rotation);
     void clearDisplayBuffer();
