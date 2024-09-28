@@ -13,9 +13,10 @@
 #include "constgeoposition.h"
 #include "tileblockrenderer.h"
 #include "uirenderer.h"
-//#include "serialutils.h"
+#include "serialutils.h"
 #include "globalconfig.h"
 #include "interppositionprovider.h"
+#include <ezButton.h>
 #define DISPLAY_CS 2
 #define SDCARD_CS 2
 
@@ -24,9 +25,6 @@ SimpleTile::Header header;
 
 uint16_t currHeading = 0;
 
-// Fixed position provider for debugging
-//GeoPosition currPos(53.897078, -0.166197);
-//ConstGeoPosition mockPosProvider(currPos, currHeading);
 
 SharedSPIDisplay display(DISPLAY_CS);
 SharedSPISDCard sdcard(SDCARD_CS);
@@ -41,18 +39,27 @@ const char binary_path[] = "/map.bin";
 // Path to gpx-track file on SD-card
 const char gpx_path[] = "/track.gpx";
 
+// constants won't change
+const int BUTTON_PIN = 2;  // Connect the Button to pin 2 for zoom change on the fly 
+// variables will change:
+int lastButtonState;        // the previous state of button
+int currentButtonState;     // the current state of button
+float zoomvalue = 1.0;      // default zoom level
+ezButton button(BUTTON_PIN);  // create ezButton object that attach to pin 2;
 
-
+TileBlockRenderer togglezoom;
 void setup() {
 
   
+  pinMode(BUTTON_PIN, INPUT);  // set arduino pin to input mode
+  button.setDebounceTime(50); // set debounce time to 50 milliseconds
 
   sleep(2);
   SPI.setFrequency(SPI_FREQ);
   SPI.begin();
   Serial.begin(9600);
   display.initialize();
-  display.setRotation(0);
+  display.setRotation(1);   // set screen to portrait mode
   gnss.initialize();
   sdcard.initialize();
   sdcard.setMapPath(binary_path);
@@ -91,6 +98,26 @@ void setup() {
 
 void loop() {
 
+
+  // button to toggle between two  zoom levels 0.5 an 1.0 so as i get close to a waypoint i can increase resolution  the center marker is 800meters tall at zoom 0.5
+   button.loop();                           // MUST call the loop() function first
+    if(button.isPressed()) {
+    Serial.println("The button is pressed");
+
+if(zoomvalue == 1.0){
+  zoomvalue = 0.5;
+  togglezoom.setZoom(0.5);                 // changes zoom number ,, but does not work changing zoom on screen
+   Serial.println("zoomvalue = 0.5");
+}
+else{
+  zoomvalue = 1.0;
+  togglezoom.setZoom(1.0); 
+  Serial.println("zoomvalue = 1.0");         // changes zoom ,, but does not work     changing zoom on screen
+}
+
+}
+
+    
 UIRENDERER.step();
 
 }
