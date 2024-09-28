@@ -35,7 +35,7 @@ GPXTrack track;
 InterpPositionProvider ipos(&gnss, ((float)GNSS_MIN_UPDATE_TIME_MS) / ((float)TARGET_FRAME_TIME_MS));
 
 // Path to map-file on SD-card
-const char binary_path[] = "/map.bin";
+const char binary_path[] = "/map.bin";   //current uk air map  each tile is 10000 x 10000
 // Path to gpx-track file on SD-card
 const char gpx_path[] = "/track.gpx";
 
