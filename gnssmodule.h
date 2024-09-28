@@ -38,7 +38,6 @@ public:
     uint8_t getSats();
     double getLatitude();
     double getLongitude();
-    float getAltitude();
 
 private:
 

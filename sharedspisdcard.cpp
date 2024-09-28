@@ -1,11 +1,11 @@
 #include "sharedspisdcard.h"
+//#include "sharedspimutex.h"
 #include "uirenderer.h"
 #include "screens.h"
 #include <SD.h>
 #include "serialutils.h"
 
 
-// got rid of the shared spi as I will be using two SPI's
 
 // constructor definition  
 SharedSPISDCard::SharedSPISDCard(uint8_t PIN_CS) : _PIN_CS(PIN_CS) {   
@@ -184,7 +184,7 @@ bool SharedSPISDCard::readGPX(SimpleTile::Header& header, GPXTrack& track) {
     uint64_t n_nodes = 0;
     while(file.peek() != EOF) {
         line = file.readStringUntil('\n');
-        if(line.indexOf("<trkpt") > 0) {      //changed from trkpt to waypt sept 25th
+        if(line.indexOf("<trkpt") > 0) {
             n_nodes++;
         }
         if(file.peek() == EOF) {
@@ -247,7 +247,7 @@ bool SharedSPISDCard::readGPX(SimpleTile::Header& header, GPXTrack& track) {
                 }
             }
 
-                  while (line.c_str()[ptr_wp_end] != '\"') {            // added this while to include wp
+                  while (line.c_str()[ptr_wp_end] != '\"') {                                  // added this while to include wp
                 ptr_wp_end++;
                 if (ptr_wp_end == line.length()) {
                 // sout.err() <= "Failed to read name for GPX track";
@@ -257,7 +257,7 @@ bool SharedSPISDCard::readGPX(SimpleTile::Header& header, GPXTrack& track) {
             
             lat = line.substring(ptr_lat_start, ptr_lat_end).toDouble();
             lon = line.substring(ptr_lon_start, ptr_lon_end).toDouble();
-            wpname = line.substring(ptr_wp_start, ptr_wp_end);            // take wpname from line string and hold in variable wpname
+            wpname = line.substring(ptr_wp_start, ptr_wp_end);                                // take wpname from line string and hold in variable wpname
             pos.updatePosition(lat, lon);
             LocalGeoPosition locPos(pos, &header);
 
@@ -287,9 +287,9 @@ wpname.toCharArray(wpo, wpname_len);
       // <trkpt lat="53.905687" lon="-0.197117" name="h18">
      //  sout << "wp " << wpo <= " ";  
 
-  //    sout << "wplist" << wpo <="  ";                           // track.wplist is in the gpxtrack.h struct
-  //    sout << " lat " << lat <= "  ";
-  //    sout << " lon " << lon <= "  ";
+      sout << "wplist" << wpo <="  ";                           // track.wplist is in the gpxtrack.h struct
+      sout << " lat " << lat <= "  ";
+      sout << " lon " << lon <= "  ";
             i++;   
         }
     };

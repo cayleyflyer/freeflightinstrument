@@ -1,6 +1,6 @@
 #include "tileblockrenderer.h"
 #include "mathutils.h"
-#include "serialutils.h"
+//#include "serialutils.h"
 #include "globalconfig.h"
 
 TileBlockRenderer::TileBlockRenderer()
@@ -39,15 +39,13 @@ void TileBlockRenderer::initialize(SimpleTile::Header* mapHeader, SharedSPISDCar
   _header = mapHeader;
   _sd = sd;
   _display = display;
-  _zoomScale = ((float)_zoomLevel) * ((float)120 / (float)(_header->tile_size));
-//   _zoomScale = ((float)_zoomLevel) * ((float)DISPLAY_WIDTH / (float)(_header->tile_size));
+  _zoomScale = ((float)_zoomLevel) * ((float)DISPLAY_WIDTH / (float)(_header->tile_size));
   // Allocate buffer for tile data.
   // A tile can have at most mapHeader.max_nodes nodes, each consisting of 2 16-bit numbers.
   // Since we load at maximum N_RENDER_TILES tiles, we need size for max_nodes*max_tiles*2 16-bit numbers.
   _perTileBufferSize = _header->max_nodes * 2;
   _renderTileData = new int16_t[_perTileBufferSize * N_RENDER_TILES]{ 0 };  //changed int32_t
   _hasHeader = true;
-
 }
 
 
@@ -64,16 +62,16 @@ void TileBlockRenderer::setGPXTrackIn(GPXTrack* track) {
 }
 
 void TileBlockRenderer::setZoom(float newZoomLevel) {
-//  sout << "retun from setzoom" << _zoomLevel<="  "; 
- if (!_hasHeader) return;
+  if (!_hasHeader) return;
   _zoomLevel = newZoomLevel;
   _zoomScale = ((float)_zoomLevel) * ((float)DISPLAY_WIDTH / (float)(_header->tile_size));
-//sout << "void setZoom" << _zoomLevel<="  "; 
 };
 
 void TileBlockRenderer::updateTileBuffer(LocalGeoPosition& center) {
+
   uint8_t c_curr, r_curr;
   int8_t idx_curr, idx_old, c_old, r_old;
+
   // Get tile IDs around new center
   center.getTileBlock(_renderTileIds);
 
@@ -165,16 +163,15 @@ void TileBlockRenderer::render(LocalGeoPosition& center) {
     // Get lower left and upper right corner of display relative to tile origin.
     // TODO: make this a bit nicer
     if (std::abs(_heading % 180) > 15) {
-
-      disp_LL_x = curr_tile_offset_x - DISPLAY_MAX_DIM / (_zoomScale); //  DISPLAY_MAX_DIM sqrt(DISPLAY_WIDTH*DISPLAY_WIDTH/2)
+      disp_LL_x = curr_tile_offset_x - DISPLAY_MAX_DIM / (_zoomScale);
       disp_UR_x = curr_tile_offset_x + DISPLAY_MAX_DIM / (_zoomScale);
       disp_LL_y = curr_tile_offset_y - DISPLAY_MAX_DIM / (_zoomScale);
       disp_UR_y = curr_tile_offset_y + DISPLAY_MAX_DIM / (_zoomScale);
     } else {
-      disp_LL_x = curr_tile_offset_x - 120 / (_zoomScale);  // DISPLAY_WIDTH_HALF/(_zoomScale) 
-      disp_UR_x = curr_tile_offset_x + 120 / (_zoomScale);
-      disp_LL_y = curr_tile_offset_y - 120 / (_zoomScale);
-      disp_UR_y = curr_tile_offset_y + 120 / (_zoomScale);
+      disp_LL_x = curr_tile_offset_x - DISPLAY_WIDTH_HALF / (_zoomScale);
+      disp_UR_x = curr_tile_offset_x + DISPLAY_WIDTH_HALF / (_zoomScale);
+      disp_LL_y = curr_tile_offset_y - DISPLAY_WIDTH_HALF / (_zoomScale);
+      disp_UR_y = curr_tile_offset_y + DISPLAY_WIDTH_HALF / (_zoomScale);
     }
 
     uint64_t p = _perTileBufferSize * tidx;
@@ -196,17 +193,10 @@ void TileBlockRenderer::render(LocalGeoPosition& center) {
       }
 
       // Calculate non-rotated position on screen.
-     //   x0 = DISPLAY_WIDTH_HALF + (_track->xList[nidx] - curr_tile_offset_x) * _zoomScale;
-     //   y0 = DISPLAY_WIDTH_HALF - (_track->yList[nidx] - curr_tile_offset_y) * _zoomScale;
-     //   x1 = DISPLAY_WIDTH_HALF + (_track->xList[nidx + 1] - next_tile_offset_x) * _zoomScale;
-     //   y1 = DISPLAY_WIDTH_HALF - (_track->yList[nidx + 1] - next_tile_offset_y) * _zoomScale;
-    // I will use the screen in portrait mode so I see more km in front of me. I need the centre of the screen x=120 y= 240 ! 
-    // if i change screen size in the globalconfig.h it does not work but does typing in manually, but rotation need doing (maths.h)
-
-      x0 = 120 + (_renderTileData[p] - curr_tile_offset_x) * _zoomScale;
-      y0 = 120 - (_renderTileData[p + 1] - curr_tile_offset_y) * _zoomScale;
-      x1 = 120 + (_renderTileData[p + 2] - curr_tile_offset_x) * _zoomScale;
-      y1 = 120 - (_renderTileData[p + 3] - curr_tile_offset_y) * _zoomScale;
+      x0 = DISPLAY_WIDTH_HALF + (_renderTileData[p] - curr_tile_offset_x) * _zoomScale;
+      y0 = DISPLAY_WIDTH_HALF - (_renderTileData[p + 1] - curr_tile_offset_y) * _zoomScale;
+      x1 = DISPLAY_WIDTH_HALF + (_renderTileData[p + 2] - curr_tile_offset_x) * _zoomScale;
+      y1 = DISPLAY_WIDTH_HALF - (_renderTileData[p + 3] - curr_tile_offset_y) * _zoomScale;
 
       // Calculate rotated position on screen.
       if (_heading != 0) {
@@ -240,6 +230,9 @@ void TileBlockRenderer::renderGPX(LocalGeoPosition& center) {
   long t_start = millis();
 
   int x0, y0, x1, y1;
+//  char wp;   // added for wp name
+//  char wp1;  // added for wp name
+//  char wp2;  // added for wp name
 
   int curr_tile_offset_x, curr_tile_offset_y, next_tile_offset_x, next_tile_offset_y;
   int64_t curr_tile_LL_x, curr_tile_LL_y, next_tile_LL_x, next_tile_LL_y;
@@ -259,18 +252,10 @@ void TileBlockRenderer::renderGPX(LocalGeoPosition& center) {
         next_tile_offset_y = center.y() - next_tile_LL_y;
 
         // Calculate non-rotated position on screen.
-     //   x0 = DISPLAY_WIDTH_HALF + (_track->xList[nidx] - curr_tile_offset_x) * _zoomScale;
-     //   y0 = DISPLAY_WIDTH_HALF - (_track->yList[nidx] - curr_tile_offset_y) * _zoomScale;
-     //   x1 = DISPLAY_WIDTH_HALF + (_track->xList[nidx + 1] - next_tile_offset_x) * _zoomScale;
-     //   y1 = DISPLAY_WIDTH_HALF - (_track->yList[nidx + 1] - next_tile_offset_y) * _zoomScale;
-
-     // I will use the screen in portrait mode so I see more km in front of me. I need the centre of the screen x=120 y= 240 !
-     // if i change screen size in the globalconfig.h it does not work but does typing in manually, but rotation need doing (maths.h)
-        x0 = 120 + (_track->xList[nidx] - curr_tile_offset_x) * _zoomScale;
-        y0 = 120 - (_track->yList[nidx] - curr_tile_offset_y) * _zoomScale;
-        x1 = 120 + (_track->xList[nidx + 1] - next_tile_offset_x) * _zoomScale;
-        y1 = 120 - (_track->yList[nidx + 1] - next_tile_offset_y) * _zoomScale;
-        // creating a char for each character works but i need exatly 8 characters in waypoint/town name . not good!
+        x0 = DISPLAY_WIDTH_HALF + (_track->xList[nidx] - curr_tile_offset_x) * _zoomScale;
+        y0 = DISPLAY_WIDTH_HALF - (_track->yList[nidx] - curr_tile_offset_y) * _zoomScale;
+        x1 = DISPLAY_WIDTH_HALF + (_track->xList[nidx + 1] - next_tile_offset_x) * _zoomScale;
+        y1 = DISPLAY_WIDTH_HALF - (_track->yList[nidx + 1] - next_tile_offset_y) * _zoomScale;
          char wp = _track->wplist[nidx];
          char wp1 = _track->wplist1[nidx];
          char wp2 = _track->wplist2[nidx];
@@ -280,7 +265,11 @@ void TileBlockRenderer::renderGPX(LocalGeoPosition& center) {
          char wp6 = _track->wplist6[nidx];
          char wp7 = _track->wplist7[nidx];
          char wp8 = _track->wplist8[nidx];
-  
+    //    const char* wp = "ok";
+    //    char waypoint[9]; 
+    //    strcpy (waypoint,wp);
+   //     strcat(waypoint,wp1);
+   //     strcat(waypoint,wp2);
          
 
         // Calculate rotated position on screen.
@@ -290,10 +279,10 @@ void TileBlockRenderer::renderGPX(LocalGeoPosition& center) {
         }
 
         _display->fillCircle(x0, y0, 5, BLACK);  // added these lines to draw circle waypoints on 5/9/24
-        _display->setCursor(x0 + 6, y0);  // set the curser next to the waypoint
-        _display->setTextSize(1);
+        _display->setCursor(x0 + 6, y0);
+        _display->setTextSize(2);
         _display->setTextColor(BLACK);
-        _display->write1(wp);                    // created a copy of (write) this in sharedspidisplay and removed the refreash after each call to stop screen flicker, it Worked!
+        _display->write1(wp);                    // created a copy of this in sharedspidisplay and removed the refreash after each call to stop screen flicker, it Worked!
         _display->write1(wp1);
         _display->write1(wp2);
         _display->write1(wp3);                    // created a copy of this in sharedspidisplay and removed the refreash after each call to stop screen flicker, it Worked!
@@ -302,7 +291,7 @@ void TileBlockRenderer::renderGPX(LocalGeoPosition& center) {
         _display->write1(wp6);                    // created a copy of this in sharedspidisplay and removed the refreash after each call to stop screen flicker, it Worked!
         _display->write1(wp7);
         _display->write1(wp8);
-        _display->fillCircle(x1, y1, 5, BLACK);  // The last wp need adding twice to show on screen
+        _display->fillCircle(x1, y1, 5, BLACK);  // i guess a line is drawn between x0,y0,x1,y1.The last trackpoint does not have "WP"next to it
         _display->setCursor(x1 + 6, y0);
 
         //     _display->draw_line(

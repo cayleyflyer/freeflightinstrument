@@ -5,15 +5,16 @@
 
 
 /*
-    GPX-Track
-*/
 
+    GPX-Track
+
+*/
 struct GPXTrack {
 public:
     int16_t* xList;
     int16_t* yList;
     uint64_t* tileIdList;
-    char* wplist; //char* wplist works,   char*wplist[8] and char wplist does not work
+    char* wplist; //char* wplist works,  char*wplist[8] and char wplist does not work
     char* wplist1; //char* wplist works,  char*wplist[8] and char wplist does not work
     char* wplist2; //char* wplist works,  char*wplist[8] and char wplist does not work
     char* wplist3; //char* wplist works,  char*wplist[8] and char wplist does not work

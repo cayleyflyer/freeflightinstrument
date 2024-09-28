@@ -37,12 +37,8 @@ void rotatePoint(int& ptxOut, int& ptyOut, int& ptxIn, int& ptyIn, int& ptxCente
 // Rotate a 2D-point [ptxIn ptyIn] by a rotation defined by mtxIn around the screen center
 // and store the result in [ptxOut ptyOut]
 void rotatePointAroundScreenCenter(int& ptxOut, int& ptyOut, int& ptxIn, int& ptyIn, float* mtxIn) {
-//    ptxOut = (int) (mtxIn[0]*(ptxIn - DISPLAY_WIDTH_HALF) + mtxIn[1]*(ptyIn - DISPLAY_WIDTH_HALF)) + DISPLAY_WIDTH_HALF;
-//    ptyOut = (int) (mtxIn[2]*(ptxIn - DISPLAY_WIDTH_HALF) + mtxIn[3]*(ptyIn - DISPLAY_WIDTH_HALF)) + DISPLAY_WIDTH_HALF;
-
-// change point of rotation to suite my vertical map screen  x = 240= y = 400 my center = x 120,240
-    ptxOut = (int) (mtxIn[0]*(ptxIn - 120) + mtxIn[1]*(ptyIn - 120)) + 120;
-    ptyOut = (int) (mtxIn[2]*(ptxIn - 120) + mtxIn[3]*(ptyIn - 120)) + 120;
+    ptxOut = (int) (mtxIn[0]*(ptxIn - DISPLAY_WIDTH_HALF) + mtxIn[1]*(ptyIn - DISPLAY_WIDTH_HALF)) + DISPLAY_WIDTH_HALF;
+    ptyOut = (int) (mtxIn[2]*(ptxIn - DISPLAY_WIDTH_HALF) + mtxIn[3]*(ptyIn - DISPLAY_WIDTH_HALF)) + DISPLAY_WIDTH_HALF;
 };
 
 // Rotate a 2D-point [ptxIn ptyIn] by a rotation defined by mtxIn around the screen center

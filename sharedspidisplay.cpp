@@ -2,16 +2,37 @@
 
 #include <SPI.h>
 #include "sharedspidisplay.h"
+//#include "sharedspimutex.h"
+//#include "sharedspidevice.h"
 #include "screens.h"
 #include "uirenderer.h"
-#include "serialutils.h"
+//#include "serialutils.h"
 
 SharedSPIDisplay::SharedSPIDisplay(uint8_t _PIN_CS): 
     disp(SHARP_SCK, SHARP_MOSI, SHARP_SS, DISPLAY_WIDTH, DISPLAY_HEIGHT, SPI_FREQ) {
    };
 
  
+/*
+void SharedSPIDisplay::enableCS() {
+    // Serial.print("Device with ID=");
+    // Serial.print(device_id);
+    // Serial.println(" enabling CS");
+    digitalWrite(_PIN_CS, HIGH);
+    _hasSPI = true;
+};
+
+void SharedSPIDisplay::disableCS() {
+    // Serial.print("Device with ID=");
+    // Serial.print(device_id);
+    // Serial.println(" disabling CS");
+    digitalWrite(_PIN_CS, LOW);
+    _hasSPI = false;
+};
+
+*/
 void SharedSPIDisplay::initialize() {
+  //  SMUTEX.aquireSPI(this);
     while(!disp.begin()) {
         delay(100);
     }
@@ -24,6 +45,7 @@ void SharedSPIDisplay::initialize() {
 }
 
 void SharedSPIDisplay::newPage() {
+  //  SMUTEX.aquireSPI(this);
     clearDisplay();
     disp.setTextSize(1);
     disp.setTextColor(BLACK);
@@ -32,6 +54,7 @@ void SharedSPIDisplay::newPage() {
 }
 
 void SharedSPIDisplay::clearDisplay() { 
+ //   SMUTEX.aquireSPI(this);
     disp.clearDisplay();
 }
 
@@ -39,9 +62,11 @@ void SharedSPIDisplay::clearDisplay() {
 
 // Just clear the buffer without rendering. Prevents "flashing"
 void SharedSPIDisplay::clearDisplayBuffer() {
+    // Does not write anything to the display so
+    // we dont need SPI bus access
     disp.clearDisplayBuffer();
 }
-/*
+
 void SharedSPIDisplay::drawCenterMarker() {
 //    SMUTEX.aquireSPI(this);
     int16_t x0, y0, x1, y1, x2, y2;
@@ -53,60 +78,59 @@ void SharedSPIDisplay::drawCenterMarker() {
     y2 = DISPLAY_HEIGHT_HALF + POSITION_MARKER_SIZE;
     disp.fillTriangle(x0, y0, x1, y1, x2, y2, BLACK);
 };
-*/
-
-void SharedSPIDisplay::drawCenterMarker() {
-    int16_t x0, y0, x1, y1, x2, y2;
-    x0 = 120 - POSITION_MARKER_SIZE;
-    y0 = 240 + POSITION_MARKER_SIZE;
-    x1 = 120;
-    y1 = 240 - 2*POSITION_MARKER_SIZE;
-    x2 = 120 + POSITION_MARKER_SIZE;
-    y2 = 240 + POSITION_MARKER_SIZE;
-    disp.fillTriangle(x0, y0, x1, y1, x2, y2, BLACK);
-};
-
-// altered to get status bar at bottom of portrait sceen also its bigger to accomodate two lines of text
 
 void SharedSPIDisplay::drawStatusBar(const char* statusStr) {
-    disp.fillRect(0, 330, 240, 70, WHITE);
-    draw_line(0, 330, 240, 330, 4, BLACK);
-  //  draw_line(0, 240, 240, 240, 4, BLACK); //line through my position trangle, horizontal
-  //  draw_line(120, 0, 120, 400, 4, BLACK); //line through my position trangle, vertical
-    disp.setTextSize(3);
+
+ //   disp.fillRect(0, DISPLAY_WIDTH, DISPLAY_WIDTH, DISPLAY_HEIGHT-DISPLAY_WIDTH, WHITE);
+ //   draw_line(0, DISPLAY_WIDTH, DISPLAY_WIDTH, DISPLAY_WIDTH, 4, BLACK);
+    disp.fillRect(0, 30, 100, 30, BLACK);
+  //  draw_line(0, DISPLAY_WIDTH, DISPLAY_WIDTH, DISPLAY_WIDTH, 4, BLACK);
+    disp.setTextSize(2);
     disp.setTextColor(BLACK);
-    disp.setCursor(5, 340);
-    disp.cp437(true);
+    //disp.setCursor(7, DISPLAY_WIDTH+6);
+    disp.setCursor(7, 7);
+   // disp.cp437(true);
     disp.write(statusStr);
     disp.refresh();
 
 };
 
 void SharedSPIDisplay::refresh() {
+ //   SMUTEX.aquireSPI(this);
     disp.refresh();
 }
 
 void SharedSPIDisplay::setCursor(int16_t x, int16_t y) {
+    // Does not write anything to the display so
+    // we dont need SPI bus access
     disp.setCursor(x, y);
 }
 
 void SharedSPIDisplay::setTextSize(uint8_t s) {
+    // Does not write anything to the display so
+    // we dont need SPI bus access
     disp.setTextSize(s);
 }
 
 void SharedSPIDisplay::setRotation(int8_t rotation) {
+
   disp.setRotation(rotation);
 }
 
 void SharedSPIDisplay::setTextColor(uint16_t c) {
+    // Does not write anything to the display so
+    // we dont need SPI bus access
     disp.setTextColor(c);
 }
 
 void SharedSPIDisplay::drawPixel(int16_t x, int16_t y, uint16_t color) {
+    // Does not write anything to the display so
+    // we dont need SPI bus access
     disp.drawPixel(x, y, color);
 }
 
 void SharedSPIDisplay::fillCircle(int16_t x0, int16_t y0, int16_t r, uint16_t color) {
+ //   SMUTEX.aquireSPI(this);
     disp.fillCircle(x0, y0, r, color);
 }
 
@@ -127,6 +151,8 @@ void SharedSPIDisplay::write1(char str) {
   }
 
 void SharedSPIDisplay::draw_line(int x0, int y0, int x1, int y1, uint8_t thickness, uint16_t color) {
+    // Does not write anything to the display so
+    // we dont need SPI bus access
     int dx =  abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
     int dy = -abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
     int err = dx + dy, e2;
@@ -159,6 +185,8 @@ void SharedSPIDisplay::draw_line(int x0, int y0, int x1, int y1, uint8_t thickne
 
 
 void SharedSPIDisplay::draw_dashedline(int x0, int y0, int x1, int y1, uint8_t thickness, uint8_t dashLength, uint16_t color) {
+    // Does not write anything to the display so
+    // we dont need SPI bus access
     int dx =  abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
     int dy = -abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
     int err = dx + dy, e2;

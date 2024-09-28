@@ -1,8 +1,8 @@
 #include "uirenderer.h"
-#include "serialutils.h"
+//#include "serialutils.h"
 #include "globalconfig.h"
 #include <Arduino.h>
-
+#include "serialutils.h"
  
 
 
@@ -19,7 +19,7 @@ UIRenderer::UIRenderer() :
 
 bool UIRenderer::initializeMap(SharedSPISDCard* sd) {
     if(_hasHeader) {
-              _mapRenderer.initialize(_header, sd, _disp);
+        _mapRenderer.initialize(_header, sd, _disp);
         if(_hasPositionProvider) {
             _mapRenderer.setPositionProvider(_posProvider);
         }
@@ -63,11 +63,10 @@ void UIRenderer::setScreen(Screen* newScreen) {
 
 // Note: This function always returns true such that it can be used to keep a while loop alive.
 bool UIRenderer::step() {
-
-   if(!_hasDisplay) return true;
+    if(!_hasDisplay) return true;
     _disp->clearDisplayBuffer();
     _currentScreen->render(_disp);
-    
+
     if(_hasGNSS) {
         _gnss->step();
     }
@@ -87,6 +86,7 @@ bool UIRenderer::step() {
 
     // Note: Statusbar must be rendered after screen!
     if(_currentScreen->hasStatusBar) {
+
         renderStatusBar();
      }
     _disp->refresh();
@@ -102,8 +102,7 @@ bool UIRenderer::step() {
 
 void UIRenderer::renderStatusBar() {
 
- //sout <= "got to render staus bar method";
-
+ 
     // Render left status
     if(_leftStat == speed || _leftStat == heading || _leftStat == lat || _leftStat == lon) {
         // Requires position provider
@@ -147,18 +146,18 @@ void UIRenderer::renderStat(StatusBarElement ele, char* textBuff, bool removeTer
     switch (ele)
     {
     case time:
-     //   sout <= "Printing time";
+        // 5e <= "Printing time";
         n_print_chars = snprintf(textBuff, N_CHAR_PER_STAT, "%02i:%02i", _gnss->getHour(), _gnss->getMinute());
         break;
 
     case date:
-     //    sout <= "Printing date";
+        // sout <= "Printing date";
         n_print_chars = snprintf(textBuff, N_CHAR_PER_STAT, "%02i.%02i", _gnss->getDay(), _gnss->getMonth());
         break;
 
     case speed:
         // sout <= "Printing speed";
-        n_print_chars = snprintf(textBuff, N_CHAR_PER_STAT, "%.1f", _gnss->getSpeed());
+        n_print_chars = snprintf(textBuff, N_CHAR_PER_STAT, "%f", _gnss->getSpeed());
         // sprintf(textBuff, "%04.0f", (float) 541.653);
         break;
 
@@ -179,7 +178,7 @@ void UIRenderer::renderStat(StatusBarElement ele, char* textBuff, bool removeTer
 
     case nsats:
         // sout <= "Printing nsats";
-        n_print_chars = snprintf(textBuff, N_CHAR_PER_STAT, "%04i", _gnss->getAltitude());
+        n_print_chars = snprintf(textBuff, N_CHAR_PER_STAT, "SAT%02i", _gnss->getSats());
         break;
     
     default:
@@ -195,8 +194,6 @@ void UIRenderer::renderStat(StatusBarElement ele, char* textBuff, bool removeTer
         } else {
             textBuff[N_CHAR_PER_STAT-1] = ' ';
         }
-
-        _disp->drawStatusBar(textBuff);    // added this to show text in the status bar sep24
         
     }
 }

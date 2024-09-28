@@ -60,6 +60,8 @@
 
 // Minimum time between two consecutive tile data updates in milliseconds.
 #define TILE_UPDATE_DEBOUNCE_MS 5000
+
+
 /**
  * 
  *      Settings for UI
@@ -82,7 +84,7 @@
 // 5 = lon
 // 6 = nsats
 // Left element of status bar
-#define LEFT_STAT 6
+#define LEFT_STAT 2
 // Right element of status bar
 #define RIGHT_STAT 3
 
@@ -93,11 +95,9 @@
 **/
 
 #define TARGET_FRAME_TIME_MS 1000/TARGET_FPS
-//#define DISPLAY_MAX_DIM sqrt(400*400/2) 
-#define DISPLAY_MAX_DIM sqrt(DISPLAY_WIDTH*DISPLAY_WIDTH/2) 
+#define DISPLAY_MAX_DIM sqrt(DISPLAY_WIDTH*DISPLAY_WIDTH/2)
 #define DISPLAY_WIDTH_HALF DISPLAY_WIDTH/2
-//#define DISPLAY_HEIGHT_HALF DISPLAY_HEIGHT/2
-#define DISPLAY_HEIGHT_HALF DISPLAY_HEIGHT/2
+#define DISPLAY_HEIGHT_HALF DISPLAY_HEIGHT -40
 #define RENDER_TILES_PER_DIM_HALF RENDER_TILES_PER_DIM / 2
 #define N_RENDER_TILES RENDER_TILES_PER_DIM*RENDER_TILES_PER_DIM
 

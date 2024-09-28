@@ -93,11 +93,6 @@ float GNSSModule::getSpeed() {
     tmp *= 1.852;
     return tmp;
 }
-float GNSSModule::getAltitude(){
- long alt = nmea.getAltitude(alt);
-  alt *= 3.28084;   //Multiply 15 meters by 3.28084 and you get 49.2126 feet of tape.
-return alt;
-}
 
 uint8_t GNSSModule::getSats() {
     return nmea.getNumSatellites();

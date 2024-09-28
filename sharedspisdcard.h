@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include <FS.h>
+//#include "sharedspidevice.h"
 #include "simpletile.h"
 #include "gpxtrack.h"
 
