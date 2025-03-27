@@ -3,52 +3,36 @@
 #include "serialutils.h"
 #include "globalconfig.h"
 #include <Arduino.h>
+#include  "zoomclass.h"
 
-TileBlockRenderer::TileBlockRenderer()
+
+//Constructors are methods that are automatically executed every time you create an object
+//The purpose of a constructor is to construct an object and assign values to the object’s members. 
+//A constructor takes the same name as the class to which it belongs
+
+
+
+TileBlockRenderer::TileBlockRenderer()                   // constructor definition tells the arduino what to do when objects are created 
   : _hasPositionProvider(false), _hasHeader(false), _hasTrackIn(false) {
-
-  /*
-        Tile buffer layout for RENDER_TILES_PER_DIM=3.
-        The current position is always on the center tile (here with index 4). 
-        _renderTileIds[0] gives the tileId of the lower left tile.
-        _renderTileSizes[0] gives the data size (count of int16_t values) of the lower left tile.
-
-        | 6 | 7 | 8 |
-        -------------
-        | 3 | 4 | 5 |
-        -------------
-        | 0 | 1 | 2 |
-    
-    */
-  // Store tile IDs currently in view
-  _renderTileIds = new uint64_t[N_RENDER_TILES]{ 0 };
-  // Array to store tile size for each tile
-  _renderTileSizes = new uint64_t[N_RENDER_TILES]{ 0 };
-  // Initialize previous center tile ID
-  _prevCenterTileId = 0;
-  // Initialize previous tile update time.
-  _prevTileUpdateTime = -TILE_UPDATE_DEBOUNCE_MS;
-  _heading = 0;
-  _rotMtxBuf = new float[4];
-  _zoomLevel = DETAULT_ZOOM_LEVEL ;
- }
+  _renderTileIds = new uint64_t[N_RENDER_TILES]{ 0 };    // Store tile IDs currently in view
+  _renderTileSizes = new uint64_t[N_RENDER_TILES]{ 0 };  // Array to store tile size for each tile
+  _prevCenterTileId = 0;                                 // Initialize previous center tile ID
+  _prevTileUpdateTime = -TILE_UPDATE_DEBOUNCE_MS;        // Initialize previous tile update time.
+  _heading = 0;                                          // Initialise heading to zero
+  _rotMtxBuf = new float[4];                             // map rotation matrix
+//_zoomLevel = DETAULT_ZOOM_LEVEL;                       // set default _zoomLevel from (globalconfig.h)
+  _zoomLevel = ZoomClass::NewZoom;                       // set default _zoomLevel from (zoomclass.cpp)
+}
 
 void TileBlockRenderer::initialize(SimpleTile::Header* mapHeader, SharedSPISDCard* sd, SharedSPIDisplay* display) {
-  _header = mapHeader;
+   _header = mapHeader;
   _sd = sd;
   _display = display;
-  _zoomScale = ((float)_zoomLevel) * ((float)120 / (float)(_header->tile_size));
-  //   _zoomScale = ((float)_zoomLevel) * ((float)DISPLAY_WIDTH / (float)(_header->tile_size));
-  // Allocate buffer for tile data.
-  // A tile can have at most mapHeader.max_nodes nodes, each consisting of 2 16-bit numbers.
-  // Since we load at maximum N_RENDER_TILES tiles, we need size for max_nodes*max_tiles*2 16-bit numbers.
+  _zoomScale = ((float)_zoomLevel) * ((float)DISPLAY_WIDTH_HALF / (float)(_header->tile_size));
   _perTileBufferSize = _header->max_nodes * 2;
   _renderTileData = new int16_t[_perTileBufferSize * N_RENDER_TILES]{ 0 };  //changed int32_t
   _hasHeader = true;
 }
-
-
-
 void TileBlockRenderer::setPositionProvider(GeoPositionProvider* newPositionProvider) {
   _positionProvider = newPositionProvider;
   _hasPositionProvider = true;
@@ -59,21 +43,6 @@ void TileBlockRenderer::setGPXTrackIn(GPXTrack* track) {
   _hasTrackIn = true;
 }
 
-// need to change zoomlevel on the fly with a button set and get functions
-void TileBlockRenderer::setZoom(float newZoomLevel){
-    this->_zoomScale = ((float)newZoomLevel) * ((float)120 / (float)(10000));
-    Serial.print("newzoomlevel ");
-    Serial.println(newZoomLevel,2);
-    Serial.print("changed_zoomScale ");
-    Serial.println(_zoomScale, 3);
- }
-
- float TileBlockRenderer::getZoom(){
- // Serial.println(_zoomScale, 3);
-  return this->_zoomScale;
- }
-
- 
 void TileBlockRenderer::updateTileBuffer(LocalGeoPosition& center) {
   uint8_t c_curr, r_curr;
   int8_t idx_curr, idx_old, c_old, r_old;
@@ -148,12 +117,12 @@ void TileBlockRenderer::updateTileBuffer(LocalGeoPosition& center) {
 */
 void TileBlockRenderer::render(LocalGeoPosition& center) {
   // Now we have the tile data in the buffer and the current position
+_zoomLevel = ZoomClass::NewZoom;   // sets zoomlevel to the static variable NewZoom delcared in zoomclass
+_zoomScale = ((float)_zoomLevel) * ((float)DISPLAY_WIDTH_HALF / (float)(_header->tile_size));
 
   int x0, y0, x1, y1;
-
   int curr_tile_offset_x, curr_tile_offset_y;
   int64_t curr_tile_LL_x, curr_tile_LL_y;
-
   int disp_LL_x, disp_LL_y, disp_UR_x, disp_UR_y;
 
   for (int tidx = 0; tidx < N_RENDER_TILES; tidx++) {
@@ -169,7 +138,7 @@ void TileBlockRenderer::render(LocalGeoPosition& center) {
     // TODO: make this a bit nicer
     if (std::abs(_heading % 180) > 15) {
 
-      disp_LL_x = curr_tile_offset_x - DISPLAY_MAX_DIM / (_zoomScale);  //  DISPLAY_MAX_DIM sqrt(DISPLAY_WIDTH*DISPLAY_WIDTH/2)
+      disp_LL_x = curr_tile_offset_x - DISPLAY_MAX_DIM / (_zoomScale);  // DISPLAY_MAX_DIM sqrt(DISPLAY_WIDTH*DISPLAY_WIDTH/2)
       disp_UR_x = curr_tile_offset_x + DISPLAY_MAX_DIM / (_zoomScale);
       disp_LL_y = curr_tile_offset_y - DISPLAY_MAX_DIM / (_zoomScale);
       disp_UR_y = curr_tile_offset_y + DISPLAY_MAX_DIM / (_zoomScale);
@@ -206,8 +175,7 @@ void TileBlockRenderer::render(LocalGeoPosition& center) {
       y0 = DISPLAY_WIDTH_HALF - (_renderTileData[p + 1] - curr_tile_offset_y) * _zoomScale;
       x1 = DISPLAY_WIDTH_HALF + (_renderTileData[p + 2] - curr_tile_offset_x) * _zoomScale;
       y1 = DISPLAY_WIDTH_HALF - (_renderTileData[p + 3] - curr_tile_offset_y) * _zoomScale;
-    Serial.print("renderZoom ");
-    Serial.println(_zoomScale, 3);
+
       // Calculate rotated position on screen.
       if (_heading != 0) {
         rotatePointInplaceAroundScreenCenter(x0, y0, _rotMtxBuf);
@@ -219,7 +187,7 @@ void TileBlockRenderer::render(LocalGeoPosition& center) {
         y0,
         x1,
         y1,
-        2, BLACK);
+        2, TFT_BLACK);
 
       p += 2;
     }
@@ -264,12 +232,6 @@ void TileBlockRenderer::renderGPX(LocalGeoPosition& center) {
         x1 = DISPLAY_WIDTH_HALF + (_track->xList[nidx + 1] - next_tile_offset_x) * _zoomScale;
         y1 = DISPLAY_WIDTH_HALF - (_track->yList[nidx + 1] - next_tile_offset_y) * _zoomScale;
 
-        // I will use the screen in portrait mode so I see more km in front of me. I need the centre of the screen x=120 y= 240 !
-        // if i change screen size in the globalconfig.h it does not work but does typing in manually, but rotation need doing (maths.h)
-        //    x0 = 120 + (_track->xList[nidx] - curr_tile_offset_x) * _zoomScale;
-        //    y0 = 240 - (_track->yList[nidx] - curr_tile_offset_y) * _zoomScale;
-        //    x1 = 120 + (_track->xList[nidx + 1] - next_tile_offset_x) * _zoomScale;
-        //    y1 = 240 - (_track->yList[nidx + 1] - next_tile_offset_y) * _zoomScale;
         char* wp = _track->nameList[nidx];
 
 
@@ -279,13 +241,13 @@ void TileBlockRenderer::renderGPX(LocalGeoPosition& center) {
           rotatePointInplaceAroundScreenCenter(x1, y1, _rotMtxBuf);
         }
 
-        _display->fillCircle(x0, y0, 5, BLACK);  // added these lines to draw circle waypoints on 5/9/24
+        _display->fillCircle(x0, y0, 5, ILI9341_GREEN);  // added these lines to draw circle waypoints on 5/9/24
         _display->setCursor(x0 + 6, y0);         // set the curser next to the waypoint
         _display->setTextSize(2);
-        _display->setTextColor(BLACK);
+        _display->setTextColor(TFT_GREEN,TFT_GREEN);
         _display->write1(wp);  // created a copy of (write) this in sharedspidisplay and removed the refreash after each call to stop screen flicker, it Worked!
 
-        _display->fillCircle(x1, y1, 5, BLACK);  // The last wp need adding twice to show on screen
+        _display->fillCircle(x1, y1, 5, TFT_GREEN);  // The last wp need adding twice to show on screen
         _display->setCursor(x1 + 6, y0);
 
         //     _display->draw_line(
@@ -347,7 +309,7 @@ bool TileBlockRenderer::step(bool holdOn) {
   if (_hasTrackIn) renderGPX(center);
   _display->drawCenterMarker();
   if (!holdOn) {
-    _display->refresh();
+  //  _display->refresh();
   }
 
   return true;

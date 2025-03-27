@@ -51,9 +51,9 @@ public:
     };
 
     void draw(SharedSPIDisplay* display) {
-        display->setCursor(x, y);
-        display->setTextSize(_textSize);
-        display->write(_text, 1);
+        display->setTextColor(TFT_BLACK,TFT_WHITE);  // Adding a background colour erases previous text automatically
+        display->setTextSize(_textSize); // text size multiplier
+        display->drawString(_text,x,y, 1); // char string to print ,cursor x, cursor y, bool hold 0 or 1
     };
 
     void setText(char* text) {
@@ -88,19 +88,20 @@ public:
 class ScreenCircleSpinner : public ScreenElement {
 
 private:
-    uint16_t _tick, _halfSize;
-    bool _color, _isStatic, _centerVisible;
+    uint16_t _tick, _halfSize, _color;
+    bool  _isStatic, _centerVisible;
     uint8_t _thickness, _speed;
     ScreenElement* _centerElement;
 
 public:
     ScreenCircleSpinner(uint16_t x, uint16_t y, uint16_t size, ScreenElement* centerElement, uint8_t thickness=2, uint8_t speed=1, uint16_t tickoffset=0) : ScreenElement(x, y), 
-        _halfSize(size/2), _tick(tickoffset), _color(BLACK), _centerElement(centerElement), _isStatic(false), _centerVisible(false), _thickness(thickness), _speed(speed) {};
+        _halfSize(size/2), _tick(tickoffset), _color(TFT_RED),_centerElement(centerElement), _isStatic(false), _centerVisible(false), _thickness(thickness), _speed(speed) {};
 
     void draw(SharedSPIDisplay* display) {
         if(!_isStatic) {
             int16_t xc = x + _halfSize * (1.0 + sin(_tick*DEG_TO_RAD));
             int16_t yc = y + _halfSize * (1.0 + cos(_tick*DEG_TO_RAD));
+            
             display->fillCircle(xc, yc, _thickness, _color);
         }
         if(_centerVisible) {
@@ -138,14 +139,14 @@ public:
 class ScreenDoubleCircleSpinner : public ScreenElement {
 
     private:
-    uint16_t _tick, _halfSize;
-    bool _color, _isStatic, _centerVisible;
+    uint16_t _tick, _halfSize,_color;
+    bool _isStatic, _centerVisible;
     uint8_t _thickness, _speed;
     ScreenCircleSpinner _s1, _s2;
 
 public:
     ScreenDoubleCircleSpinner(uint16_t x, uint16_t y, uint16_t size, ScreenElement* centerElement, uint8_t thickness=2, uint8_t speed=1, uint16_t offset=180) : ScreenElement(x, y), 
-        _halfSize(size/2), _tick(0), _color(BLACK), _isStatic(false), _centerVisible(false), _thickness(thickness), _speed(speed),
+        _halfSize(size/2), _tick(0), _color(TFT_RED), _isStatic(false), _centerVisible(false), _thickness(thickness), _speed(speed),
         _s1(x, y, size, centerElement, thickness, speed),
         _s2(x, y, size, &_s1, thickness, speed, offset) {        
 
@@ -154,6 +155,7 @@ public:
         };
 
     void draw(SharedSPIDisplay* display) {
+  
         if(!_isStatic) {
             _s2.step();
             _s2.draw(display);

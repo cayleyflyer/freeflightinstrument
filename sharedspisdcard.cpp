@@ -1,8 +1,7 @@
 #include "sharedspisdcard.h"
 #include "uirenderer.h"
 #include "screens.h"
-#include <SD.h>
-#include "serialutils.h"
+
 
 
 // got rid of the shared spi as I will be using two SPI's
@@ -12,6 +11,7 @@ SharedSPISDCard::SharedSPISDCard(uint8_t PIN_CS)
   : _PIN_CS(PIN_CS) {
   // Setup chip selector pin
   pinMode(PIN_CS, OUTPUT);
+
   // Default to disabled
   // disableCS();
 
@@ -29,27 +29,32 @@ void SharedSPISDCard::initialize() {
     UIRENDERER.delay(1000);
     if (success) break;
   }
-  BOOTSCREEN.sdOK = true;
+    BOOTSCREEN.sdOK = true;
 }
 
 
 bool SharedSPISDCard::openFile(const char* path) {
+  Serial.print("opening file");
   file.close();
+  Serial.print("close file");
   if (exists(path)) {
-    file = SD.open(path);
+     file = SD.open(path);
+    Serial.print("completed opend map file");
     return true;
   } else {
-    //   sout.warn() << "Tried to open non-existing file: " <= path;
+    Serial.println("unable to open");
     return false;
   }
 };
 
 bool SharedSPISDCard::openFile(FileType fileType) {
   if (fileType != _currFileType) {
+    
     bool success = false;
     switch (fileType) {
       case Map:
         success = openFile(_mapPath);
+        
         break;
 
       case GPXTrackIn:
@@ -171,6 +176,7 @@ void SharedSPISDCard::setGPXTrackOutPath(const char* gpxTrackOutPath) {
 };
 
 bool SharedSPISDCard::readGPX(SimpleTile::Header& header, GPXTrack& track) {
+
   // TODO: This is horrible
 
   if (!openFile(GPXTrackIn)) {
@@ -183,7 +189,7 @@ bool SharedSPISDCard::readGPX(SimpleTile::Header& header, GPXTrack& track) {
   uint64_t n_nodes = 0;
   while (file.peek() != EOF) {
     line = file.readStringUntil('\n');
-    if (line.indexOf("<trkpt") > 0) {                               //changed from trkpt to waypt sept 25th
+    if (line.indexOf("<trkpt") > 0) {  //changed from trkpt to waypt sept 25th
       n_nodes++;
     }
     if (file.peek() == EOF) {
@@ -191,19 +197,20 @@ bool SharedSPISDCard::readGPX(SimpleTile::Header& header, GPXTrack& track) {
     }
   };
 
-  sout << "Free heap before GPX: " <= ESP.getFreeHeap();
+  Serial.println(ESP.getFreeHeap());
   // Allocate memory for track data
   track.tileIdList = new uint64_t[n_nodes];
   track.xList = new int16_t[n_nodes];
   track.yList = new int16_t[n_nodes];
-  track.nameList = new char*[n_nodes];                                // added to create space in memory for waypoint name
-  sout << "Free heap after GPX: " << ESP.getFreeHeap();
+  track.nameList = new char*[n_nodes];
+  Serial.print("Free Heap After GPX: ");  // added to create space in memory for waypoint name
+  Serial.println(ESP.getFreeHeap());
 
 
   double lat, lon;
-  String wpname;                                                      // added to hold waypoint name
+  String wpname;  // added to hold waypoint name
   uint16_t ptr_lat_start, ptr_lat_end, ptr_lon_start, ptr_lon_end;
-  uint16_t ptr_wp_start, ptr_wp_end;                                  //added to deal with waypoint
+  uint16_t ptr_wp_start, ptr_wp_end;  //added to deal with waypoint
   GeoPosition pos(0.0, 0.0);
 
   int i = 0;
@@ -219,7 +226,7 @@ bool SharedSPISDCard::readGPX(SimpleTile::Header& header, GPXTrack& track) {
       ptr_lat_start = line.indexOf("lat") + 5;
       ptr_lon_start = line.indexOf("lon") + 5;
       ptr_wp_start = line.indexOf("name") + 6;  //added for waypoint name in gpx string  +6 is offset to the first character in name for name="wp1"
-      ptr_wp_end = ptr_wp_start;                //added for wapoint name 
+      ptr_wp_end = ptr_wp_start;                //added for wapoint name
       ptr_lat_end = ptr_lat_start;
       ptr_lon_end = ptr_lon_start;
 
@@ -262,20 +269,18 @@ bool SharedSPISDCard::readGPX(SimpleTile::Header& header, GPXTrack& track) {
       uint16_t nameLength = ptr_wp_end - ptr_wp_start;
       // Allocate space for the i-th waypoint name. We need one additional character for null-termination
       track.nameList[i] = new char[nameLength + 1];
-      memcpy(track.nameList[i], &(line.c_str()[ptr_wp_start]), nameLength * sizeof(char));   //memcpy(destination,source,number of bytes)
+      memcpy(track.nameList[i], &(line.c_str()[ptr_wp_start]), nameLength * sizeof(char));  //memcpy(destination,source,number of bytes)
       // Add null termination at end of waypoint name
       track.nameList[i][nameLength] = '\0';  // removed the +1 from namelenght, this stopped a random char after name. i guess new char has added and extra space already
 
-      //    sout << "wplist" << track.namelist[i] <="  ";                           // track.wplist is in the gpxtrack.h struct
-      //    sout << " lat " << lat <= "  ";
-      //    sout << " lon " << lon <= "  ";
       i++;
     }
   };
 
   track.numNodes = n_nodes;
 
-  sout << "File " << n_nodes <= "waypoints";
+  Serial.print("num waypoints: ");
+  Serial.println(n_nodes);
   // Read all nodes. For each node we get the tile.
   return true;
 }

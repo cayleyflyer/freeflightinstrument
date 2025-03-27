@@ -1,18 +1,11 @@
+#include <stdint.h>
 #ifndef _SHAREDSPIDISPLAY_H
 #define _SHAREDSPIDISPLAY_H
 
 #include <Arduino.h>
-//#include "sharedspidevice.h"
-#include <Adafruit_GFX.h>
-#include <Adafruit_SharpMem.h>
+#include <TFT_eSPI.h> // Hardware-specific library
 #include "globalconfig.h"
-
-/*
-
-    Wrapper class for the adafruit display.
-    Includes extended functionality like drawing lines with a certain thickness.
-
-*/
+#include "mapsprite.h"
 
 /*******************************************************************************
  * Sequence of offsets for line thickening.
@@ -25,7 +18,11 @@ const int thickness_offsets[6] = {1, -1, 2, -2, 3, -3};
 class SharedSPIDisplay {
 
 private:
-    Adafruit_SharpMem disp;
+   MapSprite* _spr;
+   // Adafruit_SharpMem disp;
+   //Adafruit_ILI9341 disp;
+    TFT_eSPI disp = TFT_eSPI();       // Invoke custom library
+    
     float zoom;
     uint8_t _PIN_CS;
 
@@ -38,46 +35,32 @@ public:
     void newPage();
 
     void write(const char* str, bool hold=0);
+    void drawString(const char* str,int16_t x, int16_t y, bool hold =0);
     void write1(const char* str);
     void clearDisplay();
     void setRotation(int8_t rotation);
     void clearDisplayBuffer();
     void setCursor(int16_t x, int16_t y);
+    void setTextFont(uint8_t f);
     void setTextSize(uint8_t s);
-    void setTextColor(uint16_t c);
+    void setTextColor(uint16_t c,uint16_t bg);
+    void fillScreen(uint16_t c);
     void drawPixel(int16_t x, int16_t y, uint16_t color);
     void fillCircle(int16_t x0, int16_t y0, int16_t r, uint16_t color);
     void drawQuaterCircle(int16_t x0, int16_t y0, int16_t r, uint8_t cornername, uint16_t color);
     void setTextWrap(uint8_t wrap);
 
+ 
     void refresh();
     void drawCenterMarker();
     void drawDataWindow();
+    void drawMainScreenWindow();   // added to draw screen2 data window over map
+    void drawScreenThree();        // added to draw screen3 data window over map
     void drawWindIndicator();
     void drawGPSdata(const char* statusStr,int lcdposx,int lcdposy);
-
-    /*******************************************************************************
-     * Modified Bresenham algorithm based on the implementation from wikipeda 
-     * (see https://de.wikipedia.org/wiki/Bresenham-Algorithmus)
-     * 
-     * Draws a line from p0=(x0, y0) to p1=(x1, y1) with a given thickness and color.
-     * 
-     * The modification draws parallel lines to increase line thickness.
-     * The offset of the parallel line is determined by the thickness_offsets array.
-     * For thickness = 1, the algorithm is equivalent to the original bresenham algorithm
-     *
-     * @param x0 x coordinate of first point (p0)
-     * 
-     * @param y0 y coordinate of first point (p0)
-     * 
-     * @param x1 x coordinate of second point (p1)
-     * 
-     * @param y1 y coordinate of second point (p1)
-     * 
-     * @param thickness thickness of the line that is drawn. Must take values in interval [1, 7].
-     * 
-     * @param color color of the line that is drawn.
-     ******************************************************************************/
+    void drawGPSdata2(const char* statusStr,int lcdposx,int lcdposy);
+    void drawBigAlt(const char* statusStr,int lcdposx,int lcdposy);
+ 
     void draw_line(int x0, int y0, int x1, int y1, uint8_t thickness, uint16_t color);
 
     void draw_dashedline(int x0, int y0, int x1, int y1, uint8_t thickness, uint8_t dashLength, uint16_t color);

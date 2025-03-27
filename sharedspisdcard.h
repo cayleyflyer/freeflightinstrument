@@ -3,8 +3,10 @@
 
 #include <Arduino.h>
 #include <FS.h>
+#include <SD.h>
 #include "simpletile.h"
 #include "gpxtrack.h"
+#include "globalconfig.h"
 
 /*
 
@@ -28,6 +30,7 @@ private:
     void closeFile();
 
 public:
+
     uint64_t read_bytes;
 
     SharedSPISDCard(uint8_t PIN_CS);  //CONSTRUCTOR

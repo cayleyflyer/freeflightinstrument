@@ -1,10 +1,15 @@
 #ifndef _GLOBALCONFIG_H
 #define _GLOBALCONFIG_H
 
-
+//SD Card pins using HSPI 
 #define SPI_FREQ 8000000
-#define DISPLAY_CS 2
-#define SDCARD_CS  2
+
+#define SDCARD_CS  1
+#define SD_MOSI 2
+#define SD_MISO 4
+#define SD_SCK 3
+#define SD_CS 1
+
 
 /**
  * 
@@ -17,22 +22,28 @@
 #define GNSS_ENABLE_HIGH_REFRESH false
 #define GNSS_MIN_UPDATE_TIME_MS 1000
 
+#define KMPH_MPS 0.277778
+
 /**
  * 
  *      Display module
  * 
 **/
-// any pins can be used
-#define SHARP_SCK 12
-#define SHARP_MOSI 14
-#define SHARP_SS 27
-#define BLACK 0
-#define WHITE 1
 
-#define DISPLAY_WIDTH 400 
+#define TFT_DC 7
+#define TFT_CS 6
+#define TFT_CLK 9
+#define TFT_MISO 10
+#define TFT_MOSI 8
+#define TFT_RST 5
+
+
+#define DISPLAY_WIDTH 320 
 #define DISPLAY_HEIGHT 240
 #define POSITION_MARKER_SIZE 8
 
+#define SPRITE_WIDTH  240
+#define SPRITE_HEIGHT 240
 
 /**
  * 
@@ -50,7 +61,7 @@
 **/
 
 // Default map zoom level. 1.0 means that exactly one tile fits on the display.
-#define DETAULT_ZOOM_LEVEL 2
+#define DEFAULT_ZOOM_LEVEL 2
 
 // Number of tiles per dimension to keep in memory. Must be an uneven number " 1
 #define RENDER_TILES_PER_DIM 7
@@ -72,9 +83,8 @@
 
 // Statusbar
 // Number of characters per stat in the status bar, including terminator
-#define N_CHAR_PER_STAT 6
+#define N_CHAR_PER_STAT 8
 //#define STAT1 0
-
 
 
 /**
