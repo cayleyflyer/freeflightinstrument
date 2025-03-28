@@ -24,7 +24,6 @@ private:
 
     
     SharedSPIDisplay* _disp;
-  
     GNSSModule* _gnss;
     BMP280* _bmp280;   //added to display altitude FL and QNH 
     SimpleTile::Header* _header;
@@ -36,9 +35,9 @@ private:
     void renderInfoScreen();
     void renderStatusBar();
     void renderStat(char* textBuff);
-    void renderMainScreen();           // added for screen2 5/12/24
-    void renderMainStat(char* textBuff); // added for screen2 5/12/24
-    void renderScreenThree();           // added for screen3 5/12/24
+    void renderMainScreen();                    // added for screen2 5/12/24
+    void renderMainStat(char* textBuff);        // added for screen2 5/12/24
+    void renderScreenThree();                   // added for screen3 5/12/24
     void renderScreenThreeStat(char* textBuff); // added for screen3 5/12/24
 public:
     UIRenderer();

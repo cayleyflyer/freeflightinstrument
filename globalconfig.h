@@ -29,7 +29,13 @@
  *      Display module
  * 
 **/
-
+// any pins can be used
+//#define DISPLAY_CS 5
+//#define SHARP_SCK 7
+//#define SHARP_MOSI 6
+//#define SHARP_SS 5
+//#define BLACK 0
+//#define WHITE 1
 #define TFT_DC 7
 #define TFT_CS 6
 #define TFT_CLK 9
@@ -41,9 +47,9 @@
 #define DISPLAY_WIDTH 320 
 #define DISPLAY_HEIGHT 240
 #define POSITION_MARKER_SIZE 8
-
-#define SPRITE_WIDTH  240
-#define SPRITE_HEIGHT 240
+// Width and height of sprite
+//#define WIDTH  240
+//#define HEIGHT 240
 
 /**
  * 

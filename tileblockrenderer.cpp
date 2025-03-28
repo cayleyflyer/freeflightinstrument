@@ -182,7 +182,8 @@ _zoomScale = ((float)_zoomLevel) * ((float)DISPLAY_WIDTH_HALF / (float)(_header-
         rotatePointInplaceAroundScreenCenter(x1, y1, _rotMtxBuf);
       }
 
-      _display->draw_line(
+     // _display->draw_line( //sharp lcd
+       _display->drawLine(  // tftsprite
         x0,
         y0,
         x1,
@@ -241,12 +242,10 @@ void TileBlockRenderer::renderGPX(LocalGeoPosition& center) {
           rotatePointInplaceAroundScreenCenter(x1, y1, _rotMtxBuf);
         }
 
-        _display->fillCircle(x0, y0, 5, ILI9341_GREEN);  // added these lines to draw circle waypoints on 5/9/24
-        _display->setCursor(x0 + 6, y0);         // set the curser next to the waypoint
+        _display->fillCircle(x0, y0, 5, TFT_GREEN);  // added these lines to draw circle waypoints on 5/9/24
         _display->setTextSize(2);
-        _display->setTextColor(TFT_GREEN,TFT_GREEN);
-        _display->write1(wp);  // created a copy of (write) this in sharedspidisplay and removed the refreash after each call to stop screen flicker, it Worked!
-
+        _display->setText_Color(TFT_BLACK);
+        _display->drawString(wp,x0+6,y0); //draw the way point name on the sprite
         _display->fillCircle(x1, y1, 5, TFT_GREEN);  // The last wp need adding twice to show on screen
         _display->setCursor(x1 + 6, y0);
 
@@ -280,6 +279,8 @@ bool TileBlockRenderer::isOnDisplay(int disp_LL_x, int disp_LL_y, int disp_UR_x,
 
 bool TileBlockRenderer::step(bool holdOn) {
 
+  _display->fillSprite(TFT_WHITE); // fill the map sprite background with white colour to erase last map
+
   GeoPosition globcenter(0.0, 0.0);
 
   if (!_hasPositionProvider) {
@@ -307,9 +308,9 @@ bool TileBlockRenderer::step(bool holdOn) {
 
   render(center);
   if (_hasTrackIn) renderGPX(center);
-  _display->drawCenterMarker();
+  _display->drawCenterMarker();   // draws center marker onto map sprite
   if (!holdOn) {
-  //  _display->refresh();
+    _display->refresh();
   }
 
   return true;

@@ -62,9 +62,9 @@ public:
     _elements.push_back(&_labelGnss);
     _elements.push_back(&_labelMap);
     _elements.push_back(&_labelSD);
-    _elements.push_back(&_labelTrack);  
-    _elements.push_back(&_SoftwareVersion); //adden for sofware loaded
-    _elements.push_back(&_MapVersion);  // added to show map resolution
+    _elements.push_back(&_labelTrack);
+    _elements.push_back(&_SoftwareVersion);
+    _elements.push_back(&_MapVersion);
 
     _elements.push_back(&_spinnerDisplay);
     _elements.push_back(&_spinnerGnss);
@@ -101,10 +101,9 @@ public:
       it->step();
       it->draw(display);
     }
-    
+    display->clearDisplay();
     return true;
   };
-
 };
 
 extern BootScreen BOOTSCREEN;
@@ -176,7 +175,9 @@ public:
     hasMainScreen = true;
     hasMap = true;
   }
+
   void reset(){};
+  
   bool render(SharedSPIDisplay* display) {
     return true;
   };

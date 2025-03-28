@@ -12,7 +12,9 @@ SharedSPIDisplay::SharedSPIDisplay(uint8_t _PIN_CS){};
 
 void SharedSPIDisplay::initialize() {
   disp.init();
-  _spr->createSprite(SPRITE_WIDTH , SPRITE_HEIGHT); //sprite for moving map area
+ // while (! disp.begin()) {
+ //   delay(100);
+//  }
   // Update Bootscreen status
   BOOTSCREEN.displayOK = true;
   // Set display and screen for UI renderer
@@ -28,8 +30,21 @@ void SharedSPIDisplay::newPage() {
 //  disp.cp437(true);
 }
 
+
+void SharedSPIDisplay::createSprite(int16_t WIDTH, int16_t HEIGHT,uint8_t frames){
+  spr.createSprite(WIDTH,HEIGHT,frames);
+}
+
+void SharedSPIDisplay::fillSprite(uint32_t color){
+  spr.fillSprite(color);
+}
+
+void SharedSPIDisplay::pushSprite(int32_t x, int32_t y){
+  spr.pushSprite(x, y);
+}
+
 void SharedSPIDisplay::clearDisplay() {
-  disp.fillScreen(TFT_WHITE);
+ // disp.clearDisplay();
 }
 
 
@@ -48,7 +63,7 @@ void SharedSPIDisplay::drawCenterMarker() {
   y1 = 120 - 2 * POSITION_MARKER_SIZE;
   x2 = 120 + POSITION_MARKER_SIZE;
   y2 = 120 + POSITION_MARKER_SIZE;
-  disp.fillTriangle(x0, y0, x1, y1, x2, y2, ILI9341_RED);
+  spr.fillTriangle(x0, y0, x1, y1, x2, y2, TFT_RED);
 };
 
 // Screen2 basic flight data labels
@@ -172,6 +187,12 @@ void SharedSPIDisplay::setTextColor(uint16_t c,uint16_t bg) {
   disp.setTextColor(c,bg);
 }
 
+void SharedSPIDisplay::setText_Color(uint16_t c) {
+  disp.setTextColor(c);
+}
+
+
+
 void SharedSPIDisplay::fillScreen(uint16_t c) {
   disp.fillScreen(c);
 }
@@ -195,13 +216,17 @@ void SharedSPIDisplay::write(const char* str, bool hold) {
 //    disp.refresh();
   }
 }
-
+// draw string to tft screen
+void SharedSPIDisplay::draw_String(const char* str,int16_t x, int16_t y, bool hold){
+spr.drawString(str,x,y);
+if (!hold){
+}
+}
+//draws string to sprite
 void SharedSPIDisplay::drawString(const char* str,int16_t x, int16_t y, bool hold){
 disp.drawString(str,x,y);
 if (!hold){
-
 }
-
 }
 
 void SharedSPIDisplay::write1(const char* str) {
@@ -249,6 +274,52 @@ void SharedSPIDisplay::draw_line(int x0, int y0, int x1, int y1, uint8_t thickne
     }
   }
 }
+
+void SharedSPIDisplay::drawLine(int x0, int y0, int x1, int y1, uint8_t thickness, uint16_t color){
+int dx = abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
+  int dy = -abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
+  int err = dx + dy, e2;
+
+  if (dx < -dy) {
+    while (1) {
+      spr.drawPixel(x0, y0, color);
+      for (int i = 0; i < thickness - 1; i++) {
+        spr.drawPixel(x0 + thickness_offsets[i], y0, color);
+      }
+      if (x0 == x1 && y0 == y1) break;
+      e2 = 2 * err;
+      if (e2 > dy) {
+        err += dy;
+        x0 += sx;
+      }
+      if (e2 < dx) {
+        err += dx;
+        y0 += sy;
+      }
+    }
+  } else {
+    while (1) {
+      spr.drawPixel(x0, y0, color);
+      for (int i = 0; i < thickness - 1; i++) {
+        spr.drawPixel(x0, y0 + thickness_offsets[i], color);
+      }
+      if (x0 == x1 && y0 == y1) break;
+      e2 = 2 * err;
+      if (e2 > dy) {
+        err += dy;
+        x0 += sx;
+      }
+      if (e2 < dx) {
+        err += dx;
+        y0 += sy;
+      }
+    }
+  }
+
+}
+
+
+
 
 
 void SharedSPIDisplay::draw_dashedline(int x0, int y0, int x1, int y1, uint8_t thickness, uint8_t dashLength, uint16_t color) {
