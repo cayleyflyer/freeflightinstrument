@@ -11,8 +11,7 @@ plot towns    ie draw the towns and names is in tileBlockRenderer.cpp TileBlockR
 
 
 
-//$GPRMC,103959.00,A,5353.82145,N,00009.98861,W,0.261,,230724,,,A,V*17
-//$GPGGA,103959.00,5353.82145,N,00009.98861,W,1,12,0.95,25.0,M,46.3,M,,*7D
+
 
 #include <Arduino.h>
 #include <FS.h>
